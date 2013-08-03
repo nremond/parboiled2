@@ -32,7 +32,7 @@ class ParserSpec extends TestParserSpec {
     }
 
     "successfully recognize valid input - `firstOf` combinator rule" in new TestParser {
-      def targetRule = rule { (ch('a') | 'b') }
+      def targetRule = rule { ch('a') | 'b' }
       "a" must Match
       "b" must Match
       "c" must Mismatch
