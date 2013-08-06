@@ -74,16 +74,18 @@ trait OpTreeContext[OpTreeCtx <: Parser.ParserContext] {
         }
       } catch {
         case e: Parser.CollectingRuleStackException ⇒
-          e.save(RuleFrame.CharacterClass(lower, upper, c.literal(ruleName).splice))
+          e.save(RuleFrame.CharacterClass(c.literal(lower).splice, c.literal(upper).splice, c.literal(ruleName).splice))
       }
     }
   }
   object CharacterClass {
-    def unapply(tree: Tree): Option[OpTree] =
-      tree match {
-        case Apply(Select(lhs: LiteralString, Decoded("-")), List(rhs: LiteralString)) ⇒ Some(apply(lhs, rhs))
-        case _ ⇒ None
-      }
+    def unapply(tree: Tree): Option[OpTree] = tree match {
+      case Apply(Select(Modifier(lhsTM @ LiteralString()), Decoded("-")), List(Modifier(rhsTM @ LiteralString()))) ⇒
+        val lhs = LiteralString.fromTreeMatch(lhsTM)
+        val rhs = LiteralString.fromTreeMatch(rhsTM)
+        Some(apply(lhs, rhs))
+      case _ ⇒ None
+    }
   }
 
   // TODO: Having sequence be a simple (lhs, rhs) model causes us to allocate a mark on the stack
@@ -140,7 +142,7 @@ trait OpTreeContext[OpTreeCtx <: Parser.ParserContext] {
   object LiteralString extends Modifier.Companion {
     // TODO: expand string literal into sequence of LiteralChars for all strings below a certain threshold
     // number of characters (i.e. we "unroll" short strings with, say, less than 16 chars)
-    def fromTreeMatch = {
+    override def fromTreeMatch: PartialFunction[Modifier.TreeMatch, LiteralString] = {
       case Modifier.TreeMatch("str", Literal(Constant(s: String))) ⇒ LiteralString(s)
     }
   }

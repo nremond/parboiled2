@@ -112,8 +112,8 @@ object Parser {
   def ruleImpl(ctx: ParserContext)(r: ctx.Expr[Rule]): ctx.Expr[Rule] = {
     val opTreeCtx = new OpTreeContext[ctx.type] { val c: ctx.type = ctx }
     val opTree = opTreeCtx.OpTree(r.tree)
-    val ruleName = ctx.enclosingMethod.asInstanceOf[ctx.universe.DefDef].name.toString
-    opTree.render(ruleName)
+    val ctx.universe.DefDef(_, ruleName, _, _, _, _) = ctx.enclosingMethod
+    opTree.render(ruleName.toString)
   }
 
   private[parboiled2] class CollectingRuleStackException extends RuntimeException {
